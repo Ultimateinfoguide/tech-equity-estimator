@@ -2,7 +2,7 @@
 
 A brutalist, privacy-first web tool designed for software engineers and tech startup employees to instantly calculate the net cash value of their vesting Restricted Stock Units (RSUs). 
 
-🚀 **[View the Live Vercel Deployment Here](https://tech-equity-estimator.vercel.app/)** *(You will update this link after you deploy to Vercel)*
+🚀 **[View the Live Vercel Deployment Here](https://tech-equity-estimator.vercel.app/)** 
 
 ## 📌 Why This Exists
 Calculating tech equity shouldn't require surrendering your financial data to a server or loading massive tracking payloads. We built this static, high-contrast estimator to give tech professionals a lightning-fast way to run their vesting numbers directly in the browser.
