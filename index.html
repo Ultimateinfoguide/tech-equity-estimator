@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Equity: RSU Vesting Estimator</title>
+    <style>
+        /* UIG Vercel Encapsulated Styles */
+        body {
+            background-color: #000000;
+            color: #ededed;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .uig-vc-card {
+            background-color: #0a0a0a;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            padding: 32px;
+            max-width: 450px;
+            width: 100%;
+        }
+        .uig-vc-header {
+            margin-top: 0;
+            font-size: 22px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+        .uig-vc-subtitle {
+            font-size: 14px;
+            color: #a1a1aa;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .uig-vc-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .uig-vc-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            background-color: #000000;
+            border: 1px solid #333333;
+            color: #ffffff;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        .uig-vc-input:focus {
+            outline: none;
+            border-color: #ffffff;
+        }
+        .uig-vc-btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+            margin-bottom: 24px;
+        }
+        .uig-vc-btn:hover {
+            opacity: 0.8;
+        }
+        .uig-vc-results {
+            display: none;
+            border-top: 1px solid #333333;
+            padding-top: 24px;
+        }
+        .uig-vc-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #a1a1aa;
+        }
+        .uig-vc-row:last-of-type {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed #333333;
+        }
+        .uig-vc-highlight {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .uig-vc-footer {
+            font-size: 12px;
+            color: #666666;
+            line-height: 1.6;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #333333;
+        }
+        .uig-vc-link {
+            color: #ededed;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .uig-vc-link:hover {
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="uig-vc-card">
+    <h2 class="uig-vc-header">RSU Vesting Estimator</h2>
+    <p class="uig-vc-subtitle">Calculate the net cash value of your tech equity after standard supplemental withholding.</p>
+    
+    <label class="uig-vc-label" for="uig_vc_shares">Shares Vesting</label>
+    <input class="uig-vc-input" type="number" id="uig_vc_shares" placeholder="e.g. 100" min="1">
+
+    <label class="uig-vc-label" for="uig_vc_price">Current Stock Price ($)</label>
+    <input class="uig-vc-input" type="number" id="uig_vc_price" placeholder="e.g. 150.50" min="0" step="0.01">
+
+    <button class="uig-vc-btn" id="uig_vc_calc_btn">Calculate Net Vest Value</button>
+
+    <div class="uig-vc-results" id="uig_vc_results_box">
+        <div class="uig-vc-row">
+            <span>Gross Vest Value:</span>
+            <span id="uig_vc_gross">$0.00</span>
+        </div>
+        <div class="uig-vc-row">
+            <span>Est. Federal Withholding (22%):</span>
+            <span id="uig_vc_tax">-$0.00</span>
+        </div>
+        <div class="uig-vc-row">
+            <span>Net Cash Value:</span>
+            <span class="uig-vc-highlight" id="uig_vc_net">$0.00</span>
+        </div>
+    </div>
+
+    <div class="uig-vc-footer">
+        <strong>Note:</strong> This tool applies the standard 22% federal supplemental rate for tech equity. For precise state-level capital gains, Medicare, social security, and sell-to-cover share breakdowns, run your grant through the full <a href="https://ultimateinfoguide.com/rsu-tax-calculator/" target="_blank" class="uig-vc-link">RSU Tax Calculator</a>.
+    </div>
+</div>
+
+<script>
+(function () {
+    "use strict";
+
+    function calculateRSU() {
+        var sharesInput = document.getElementById('uig_vc_shares').value;
+        var priceInput = document.getElementById('uig_vc_price').value;
+
+        var shares = parseFloat(sharesInput);
+        var price = parseFloat(priceInput);
+
+        if (isNaN(shares) || isNaN(price) || shares <= 0 || price < 0) {
+            return;
+        }
+
+        var grossValue = shares * price;
+        // Standard supplemental federal rate is 22%
+        var taxWithheld = grossValue * 0.22;
+        var netValue = grossValue - taxWithheld;
+
+        document.getElementById('uig_vc_gross').innerText = '$' + grossValue.toFixed(2);
+        document.getElementById('uig_vc_tax').innerText = '-$' + taxWithheld.toFixed(2);
+        document.getElementById('uig_vc_net').innerText = '$' + netValue.toFixed(2);
+
+        document.getElementById('uig_vc_results_box').style.display = 'block';
+    }
+
+    function init() {
+        var calcBtn = document.getElementById('uig_vc_calc_btn');
+        if (calcBtn) {
+            calcBtn.onclick = calculateRSU;
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>
+
+</body>
+</html>
